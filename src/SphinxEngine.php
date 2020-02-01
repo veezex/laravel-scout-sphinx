@@ -90,7 +90,7 @@ class SphinxEngine extends AbstractEngine
     public function search(Builder $builder)
     {
         return $this->performSearch($builder)
-            ->execute();
+            ->execute()->fetchAllAssoc();
     }
 
     /**
@@ -155,14 +155,13 @@ class SphinxEngine extends AbstractEngine
     {
         $res = (new Helper($this->sphinx->getConnection()))->showMeta()->execute();
         $assoc = $res->fetchAllAssoc();
-        $totalCount = $results->count();
+        $totalCount = count($results);
         foreach ($assoc as $item => $value) {
             if ($value["Variable_name"] == "total_found") {
                 $totalCount = $value["Value"];
             }
         }
-        if ($totalCount >= 1000)
-            $totalCount = 999;
+
         return $totalCount;
     }
 
@@ -197,7 +196,7 @@ class SphinxEngine extends AbstractEngine
         $query = $this->sphinx
             ->select('*')
             ->from($index);
-    
+
         if ($builder->query) {
             $query->match('*', SphinxQL::expr('"' . $builder->query . '"/1'));
         }
